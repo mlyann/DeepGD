@@ -3,7 +3,7 @@ from typing import Callable, Any
 import torch
 from torch import nn, jit
 
-
+# Trace Module will collect the input and the output.
 class TracedModule(nn.Module):
 
     def __new__(cls, func: Callable, example_inputs: dict[str, torch.Tensor]) -> jit.ScriptModule:
@@ -18,3 +18,6 @@ class TracedModule(nn.Module):
     # TODO: dynamically generate forward method
     def forward(self, kwargs: dict, /) -> Any:
         return self.func(**kwargs)
+
+
+# keargs: keyword arguments

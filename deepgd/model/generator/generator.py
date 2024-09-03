@@ -165,9 +165,9 @@ class Generator(nn.Module):
                 node_feat=outputs,
                 node_attr=inputs,
                 edge_index=edge_index,
-                edge_attr=edge_attr,
+                edge_attr=edge_attr,  # weights of each edge
                 batch_index=batch_index,
-                num_sampled_nodes_per_hop=num_sampled_nodes_per_hop,
+                num_sampled_nodes_per_hop=num_sampled_nodes_per_hop, # ???? Ming: what is hop? one approach of collecting sample nodes?
                 num_sampled_edges_per_hop=num_sampled_edges_per_hop
             )
 
