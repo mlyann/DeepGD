@@ -96,7 +96,7 @@ class ErdosRenyiDataset(InMemoryDataset):
         torch.save((data, slices), self.processed_paths[0])
 
 
-# Example usage
+'''
 # Step 1: Initialize the dataset
 dataset = ErdosRenyiDataset(
     root="path/to/dataset",
@@ -105,7 +105,7 @@ dataset = ErdosRenyiDataset(
     num_graphs_per_combination=10,  # 10 graphs per combination
     datatype=GraphDrawingData  # Same as before
 )
+'''
 
-# Step 2: The rest of the code remains the same
-# Example: Using the dataset with DataLoader for training
-train_loader = pyg.loader.DataLoader(dataset, batch_size=32, shuffle=True)
+
+
