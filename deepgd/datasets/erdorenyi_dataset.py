@@ -96,16 +96,3 @@ class ErdosRenyiDataset(InMemoryDataset):
         torch.save((data, slices), self.processed_paths[0])
 
 
-'''
-# Step 1: Initialize the dataset
-dataset = ErdosRenyiDataset(
-    root="path/to/dataset",
-    node_sizes=[20, 40, 80],  # Node sizes as specified
-    probabilities=[0.2, 0.4, 0.6, 0.8],  # Probabilities as specified
-    num_graphs_per_combination=10,  # 10 graphs per combination
-    datatype=GraphDrawingData  # Same as before
-)
-'''
-
-
-
