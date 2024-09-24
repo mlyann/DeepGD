@@ -46,8 +46,8 @@ class RomeDataset(pyg.data.InMemoryDataset):
         data_dict = {data.G.graph["name"]: data for data in data_list}
         #data_list = [data_dict[name] for name in self.index]
         # data_list = [data_dict[name] for name in ['path'+str(i) for i in range(5,10)]]
-        node_sizes = [20, 40, 80]
-        probabilities = [0.2, 0.4, 0.6, 0.8]
+        node_sizes = [20, 30, 40, 50,80]
+        probabilities = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 
         data_list = []
         for node_size in node_sizes:
@@ -57,7 +57,7 @@ class RomeDataset(pyg.data.InMemoryDataset):
                     if graph_name in data_dict: 
                         data_list.append(data_dict[graph_name])
                     else:
-                        print(f"Graph {graph_name} not found in data_dict")
+                        print(f"Graph {graph_name} not found")
 
         self.data, self.slices = self.collate(list(data_list))
 
@@ -117,8 +117,8 @@ class RomeDataset(pyg.data.InMemoryDataset):
         #         dataset='test'
         #     ))
         #     yield G
-        node_sizes = [20, 40, 80]
-        probabilities = [0.2, 0.4, 0.6, 0.8]
+        node_sizes = [20, 30, 40, 50,80]
+        probabilities = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
         for node_size, prob in itertools.product(node_sizes, probabilities):
             for i in range(10):  # Generate 10 graphs per combination
                 G = nx.erdos_renyi_graph(n=node_size, p=prob)
