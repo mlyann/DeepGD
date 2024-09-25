@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import torch_geometric as pyg
 import networkx as nx
-
+import itertools
 
 DATATYPE = TypeVar("DATATYPE", bound=BaseData)
 
@@ -28,6 +28,7 @@ class RomeDataset(pyg.data.InMemoryDataset):
                  name: str = DEFAULT_NAME,
                  index: Optional[list[str]] = None,
                  datatype: type[DATATYPE] = GraphDrawingData):
+        print('inside init')
         self.url: str = url
         self.dataset_name: str = name
         self.index: Optional[list[str]] = index
@@ -43,10 +44,25 @@ class RomeDataset(pyg.data.InMemoryDataset):
             self.index = index_file.read().strip().split("\n")
         data_list = map(datatype.static_transform, tqdm(self, desc=f"Transform graphs"))
         data_dict = {data.G.graph["name"]: data for data in data_list}
-        data_list = [data_dict[name] for name in self.index]
+        #data_list = [data_dict[name] for name in self.index]
+        # data_list = [data_dict[name] for name in ['path'+str(i) for i in range(5,10)]]
+        node_sizes = [20, 30, 40, 50,80]
+        probabilities = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+
+        data_list = []
+        for node_size in node_sizes:
+            for prob in probabilities:
+                for i in range(10): 
+                    graph_name = f'erdos_renyi_{node_size}_{prob}_graph_{i}'
+                    if graph_name in data_dict: 
+                        data_list.append(data_dict[graph_name])
+                    else:
+                        print(f"Graph {graph_name} not found")
+
         self.data, self.slices = self.collate(list(data_list))
 
     def _parse_metadata(self, logfile: str) -> Iterator[str]:
+        print('inside _parse_metadata')
         with open(logfile) as fin:
             for line in fin.readlines():
                 if match := self.GRAPH_NAME_REGEX.search(line):
@@ -54,6 +70,7 @@ class RomeDataset(pyg.data.InMemoryDataset):
 
     @property
     def raw_file_names(self) -> list[str]:
+        print('raw_file_names')
         metadata_file = "rome/Graph.log"
         if os.path.exists(metadata_path := os.path.join(self.raw_dir, metadata_file)):
             return list(map(lambda f: f"rome/{f}.graphml", self._parse_metadata(metadata_path)))
@@ -61,6 +78,7 @@ class RomeDataset(pyg.data.InMemoryDataset):
 
     @property
     def processed_file_names(self) -> list[str]:
+        print('processed_file_names')
         return ["data.pt", "index.txt"]
 
     @property
@@ -70,11 +88,13 @@ class RomeDataset(pyg.data.InMemoryDataset):
     @property
     def index_path(self) -> str:
         return self.processed_paths[1]
-
+    
     def generate(self) -> Iterator[nx.Graph]:
+        print('inside generate')
         def key(path):
             match = self.GRAPH_NAME_REGEX.search(path)
             return int(match.group(1)), int(match.group(2))
+        '''
         for file in tqdm(sorted(self.raw_paths, key=key), desc=f"Loading graphs"):
             G = nx.read_graphml(file)
             G.graph.update(dict(
@@ -82,12 +102,40 @@ class RomeDataset(pyg.data.InMemoryDataset):
                 dataset=self.dataset_name
             ))
             yield G
+        '''
+        #file  = self.raw_paths[0]
+        #G = nx.read_graphml(file)
+        #G.graph.update(dict(
+        #    name=self.GRAPH_NAME_REGEX.search(file).group(0),
+        #    dataset=self.dataset_name
+        #))
+        #yield G
+        # for i in range(5, 10):
+        #     G = nx.path_graph(i)
+        #     G.graph.update(dict(
+        #         name='path'+str(i),
+        #         dataset='test'
+        #     ))
+        #     yield G
+        node_sizes = [20, 30, 40, 50,80]
+        probabilities = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+        for node_size, prob in itertools.product(node_sizes, probabilities):
+            for i in range(10):  # Generate 10 graphs per combination
+                G = nx.erdos_renyi_graph(n=node_size, p=prob)
+                G.graph.update(dict(
+                    name=f'erdos_renyi_{node_size}_{prob}_graph_{i}',
+                    dataset='test'
+                ))
+                yield G
 
+                
     def download(self) -> None:
+        print('inside download')
         pyg.data.download_url(self.url, self.raw_dir)
         pyg.data.extract_tar(f'{self.raw_dir}/rome-graphml.tgz', self.raw_dir)
 
     def process(self) -> None:
+        print('inside process')
         def filter_and_save_index(data_list):
             name_list = []
             for data in data_list:
