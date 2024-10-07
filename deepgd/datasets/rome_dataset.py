@@ -43,7 +43,12 @@ class RomeDataset(pyg.data.InMemoryDataset):
         with open(self.index_path, "r") as index_file:
             self.index = index_file.read().strip().split("\n")
         data_list = map(datatype.static_transform, tqdm(self, desc=f"Transform graphs"))
+        # total = 0
+        # for _ in data_list:
+        #     total += 1
+        # print("datalist", total) #345
         data_dict = {data.G.graph["name"]: data for data in data_list}
+        print('data dictionary size:', len(data_dict.keys()))
         #data_list = [data_dict[name] for name in self.index]
         # data_list = [data_dict[name] for name in ['path'+str(i) for i in range(5,10)]]
         node_sizes = [20, 30, 40, 50,80]
@@ -119,13 +124,17 @@ class RomeDataset(pyg.data.InMemoryDataset):
         #     yield G
         node_sizes = [20, 30, 40, 50,80]
         probabilities = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+        count = 0
         for node_size, prob in itertools.product(node_sizes, probabilities):
             for i in range(10):  # Generate 10 graphs per combination
+                count += 1
                 G = nx.erdos_renyi_graph(n=node_size, p=prob)
                 G.graph.update(dict(
                     name=f'erdos_renyi_{node_size}_{prob}_graph_{i}',
                     dataset='test'
                 ))
+                if count>340:
+                    print('count', count)
                 yield G
 
                 
@@ -149,8 +158,13 @@ class RomeDataset(pyg.data.InMemoryDataset):
             with open(self.index_path, "w") as index_file:
                 index_file.write("\n".join(self.index))
 
+        # print('before generate')
         data_list = map(self.datatype, self.generate())
+        # print(" data_list = map(self.datatype, self.generate())" , len(list(map(self.datatype, self.generate()))))
         data_list = filter_and_save_index(data_list)
+        # print("data_list = filter_and_save_index(data_list)",len(list(filter_and_save_index(data_list))))
         data_list = map(self.pre_transform, data_list)
+        # print("data_list = map(self.pre_transform, data_list)",len(list(map(self.pre_transform, data_list))))
         data, slices = self.collate(list(data_list))
+        
         torch.save((data, slices), self.processed_paths[0])
